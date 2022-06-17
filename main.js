@@ -393,4 +393,4 @@ const profesionalObj = new Profesional();
 const PacienteObj = new Paciente();
 let opcion = 1;
 let indice;
-// menuPrincipal()
+menuPrincipal()
