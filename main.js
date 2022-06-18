@@ -322,85 +322,76 @@ const errDNI = () => {
   if (dni.isNaN) errDNI();
   else PacienteObj.dni = dni;
 };
-const telefonoPaciente = (error) => {
+const telefonoPaciente = (error, telefono, indice) => {
   let regexTelefono =
-    /\([0-9]{3}[0-9]?[0-9]?\)[-]?([0-9]{2})?[0-9]?[-]?[0-9]{2}[0-9]?[-]?[0-9]{4}/g;
+    /\(?[0-9]{3}[0-9]?[0-9]?\)?[-]?([0-9]{2})?[0-9]?[-]?[0-9]{2}[0-9]?[-]?[0-9]{4}/g;
   if (error) alert("ingresaste mal el numero de telefono");
-  let telefono = prompt(`Ingrese el telefono del paciente:
-Formato: (011)-aaa-bbb-cccc
-aaa Puede contener el 15 del celular o solo codigo de area si es fijo
-bbb puede ser de 2 o 3 caracteres`);
   let condicion = regexTelefono.test(telefono);
   if (condicion) {
     PacienteObj.telefono[indice] = telefono;
-  } else telefonoPaciente(true);
+  } else alert("Esta mal ingresado el telefono");
 };
-const validarDni = item => {
+const validarDni = (item) => {
   let documento;
   let indice = 0;
   item.isNaN ? errDNI() : (documento = PacienteObj.dni); //VRIFICA QUE LO INGRESADO SEA UN NUMERO DE LO CONTRARIO MUESTRA ERROR
-  if (documento.length>2) {
-    indice = documento.forEach((documentoVal) => {
-        if (documentoVal.indexOf(item) == -1) return false;
-        else {
-          indice = documentoVal.indexOf(dni);
-        } })
-}
-  documento.length < 2 && documento[0] == undefined
-    ? ((documento[0] = item), (indice = 0))
-    : documento.length < 2 && documento[0] == item
-    ? alert("DNI repetido")
-    : (documento.push(item),indice=documento.length-1);
-
-};
-const configurarPaciente = () => {
-  let dni = prompt("DNI");
-  let documento = PacienteObj.dni;
-
-  if (parseInt(dni).isNaN) errDNI();
-  if (documento.length < 2) {
-    if (documento[0] == undefined) {
-      documento[0] = dni;
-      indice = 0;
-    } else {
-      if (documento[0] == dni) {
-        indice = 0;
-        alert("dni repetido");
-      } else {
-        documento.push(dni);
-        indice = documento.length - 1;
-      }
-    }
-  } else {
-    indice = documento.forEach((item) => {
-      if (item.indexOf(dni) == -1) return false;
-      else {
-        indice = item.indexOf(dni);
-      }
-    });
-    if (indice == false) {
-      documento.push(dni);
+  if (documento.length > 1) {
+    //evalua repetidos si el documento tiene mas de un registro
+   indice = documento.indexOf(item);
+    if (indice == -1) {
+      documento.push(item);
+      agregarDomicilio()
       indice = documento.length - 1;
-    }
+    }else alert("Ese DNI ya existe se modificaron los datos")
   }
-  let apellido1 = prompt("Apellido del paciente:").toUpperCase();
-  PacienteObj.apellido[indice] = apellido1;
-  PacienteObj.nombre = prompt("Nombre del paciente").toUpperCase();
+  documento.length < 2 && documento[0] == undefined //se fija si el primer valor es undefined (ya que al definir la clase siempre me rellena el [0] como undefined)
+    ? ((documento[0] = item), (indice = 0)) //si el valor [0] es undefined entonces coloca ahi el primer valor y resetea el indice  a 0
+    : documento.length < 2 && documento[0] == item //si el valor no es undefined y es igual al que ingreso el user envia un alert y no define indice
+    ? (alert("DNI repetido"),indice=0)
+    : documento.length < 2
+    ? (documento.push(item), agregarDomicilio(),(indice = documento.length - 1)) // si hay menos de 2 valores en la bd y no se cumple el resto pushea el valor del usuarioo
+    : (documento = documento);
 
-  telefonoPaciente(false);
-  if (indice > 0) {
+  return indice; //devuelve el valor indice que se usara apara guardar el resto de los datos
+};
+const agregarDomicilio= ()=>{
     PacienteObj.direccion.push({
       calle: "",
       numero: "",
       cPostal: "",
       localidad: "",
     });
+  
+}
+const configurarPaciente = (dni) => {
+  let documento = PacienteObj.dni;
+  let indice;
+  indice = validarDni(dni);
+  if (indice !== undefined) {
+    PacienteObj.apellido[indice] = document.getElementById("apellido").value;
+    PacienteObj.nombre[indice] = document.getElementById("apellido").value;
+    telefonoPaciente(false, document.getElementById("telefono").value, indice);
+    PacienteObj.direccion[indice].calle =
+      document.getElementById("calle").value;
+    PacienteObj.direccion[indice].numero =
+      document.getElementById("altura").value;
+    PacienteObj.direccion[indice].cPostal =
+      document.getElementById("CPA").value;
+    PacienteObj.direccion[indice].localidad =
+      document.getElementById("localidad").value;
   }
-  PacienteObj.direccion[indice].calle = prompt("Calle donde vive:");
-  PacienteObj.direccion[indice].numero = prompt("Altura de la calle:");
-  PacienteObj.direccion[indice].cPostal = prompt("Codigo postal");
-  PacienteObj.direccion[indice].localidad = prompt("Localidad");
+  limpiarPaciente()
 };
+const limpiarPaciente=()=>{
+  document.getElementById("apellido").value=""
+  document.getElementById("nombre").value=""
+  document.getElementById("dni").value=""
+  document.getElementById("telefono").value=""
+  document.getElementById("calle").value=""
+  document.getElementById("localidad").value=""
+  document.getElementById("altura").value=""
+  document.getElementById("CPA").value=""
+   }
 //////////////////////////////////////////
 // LOGICA PRINCIPAL                     //
 //////////////////////////////////////////
@@ -419,4 +410,14 @@ const enviarPaciente = document.getElementById("enviarPaciente");
 enviarPaciente.addEventListener("click", (e) => {
   e.preventDefault();
   const dniPaciente = document.getElementById("dni");
+  configurarPaciente(dniPaciente.value);
 });
+
+const documentoInput = document.getElementById("dni")
+documentoInput.addEventListener("change",(e)=>{
+let valor=e.target.value
+console.log(typeof valor)
+if (typeof valor == "string") {
+  documentoInput.classList.toggle("error")
+}else {documentoInput.classList.remove("error")}
+})

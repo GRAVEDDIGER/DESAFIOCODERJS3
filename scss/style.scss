@@ -16,6 +16,11 @@ input[type="text"]:hover{
     justify-content: center;
     align-items: center;
 }
+.error{
+    background-color:red !important;
+    color: white !important;
+
+}
 ////////importacion////////////////////////////////
 @import "../node_modules/bootstrap/scss/bootstrap.scss" 
 
